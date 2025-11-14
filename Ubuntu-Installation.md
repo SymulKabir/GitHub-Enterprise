@@ -66,25 +66,37 @@ virsh list --all
 #### Move the New Image to a Proper Location
 ```bash
 sudo mkdir -p /var/lib/libvirt/images/
-sudo mv /path/github-enterprise-3.18.1.qcow2 /var/lib/libvirt/images/
+sudo cp /path/github-enterprise-3.18.1.qcow2 /var/lib/libvirt/images/
 ```
 #### Create secondary data disk (`≥145 GB`):
 ```bash
-sudo qemu-img create -f qcow2 /var/lib/libvirt/images/github-enterprise-data.qcow2 150G
+sudo qemu-img create -f qcow2 /var/lib/libvirt/images/github-enterprise-data.qcow2 200G
+```
+Check:
+```bash
+ls -lh /var/lib/libvirt/images/
+```
+Expected:
+```bash
+github-enterprise-3.18.1.qcow2
+github-enterprise-data.qcow2
 ```
 
 #### Create GitHub Enterprise VM
 ```bash
 sudo virt-install \
   --name github-enterprise \
-  --memory 27648 \
-  --vcpus 4 \
+  --memory 32768 \
+  --vcpus 8 \
   --disk path=/var/lib/libvirt/images/github-enterprise-3.18.1.qcow2,format=qcow2,bus=virtio \
   --disk path=/var/lib/libvirt/images/github-enterprise-data.qcow2,format=qcow2,bus=virtio \
   --os-variant ubuntu22.04 \
+  --network network=default,model=virtio \
+  --graphics none \
   --import \
-  --network network=default \
-  --graphics none
+  --console pty,target_type=serial \
+  --serial pty
+
 ```
 **✅ Explanation:**
 - `--memory 27648` → 27 GB RAM
